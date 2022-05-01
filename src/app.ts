@@ -30,19 +30,23 @@ export async function createMessanger(el: HTMLDivElement) {
 
   setInterval(
     () =>
-      get(child(db, `chat/data`)).then((snapsht) => {
-        if (snapsht.exists() && snapsht.val().version !== dbVersion) {
-          setVersion(snapsht.val().version);
-          dbVersion = snapsht.val().version;
+      get(child(db, `chat/data`))
+        .then((snapsht) => {
+          if (snapsht.exists() && snapsht.val().version !== dbVersion) {
+            setVersion(snapsht.val().version);
+            dbVersion = snapsht.val().version;
 
-          store.dispatch({
-            type: "SEND_MESSAGE",
-            payload: snapsht.val(),
-          });
-        } else {
-          console.log("No data available");
-        }
-      }),
+            store.dispatch({
+              type: "SEND_MESSAGE",
+              payload: snapsht.val(),
+            });
+          } else {
+            console.log("No data available");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        }),
     2000
   );
 
@@ -89,21 +93,25 @@ export async function createMessanger(el: HTMLDivElement) {
   clearButton.addEventListener("click", () => {
     const dbRef = ref(database);
 
-    set(ref(database, "chat/data"), { ...initialState.data }).then(async () => {
-      get(child(dbRef, `chat/data`)).then(async (snapsht) => {
-        if (snapsht.exists()) {
-          setVersion(snapsht.val().version);
+    set(ref(database, "chat/data"), { ...initialState.data })
+      .then(async () => {
+        get(child(dbRef, `chat/data`)).then(async (snapsht) => {
+          if (snapsht.exists()) {
+            setVersion(snapsht.val().version);
 
-          dbVersion = await getVersion();
+            dbVersion = await getVersion();
 
-          store.dispatch({
-            type: "CLEAR_HISTORY",
-            payload: snapsht.val(),
-          });
-        } else {
-          console.log("No data available");
-        }
+            store.dispatch({
+              type: "CLEAR_HISTORY",
+              payload: snapsht.val(),
+            });
+          } else {
+            console.log("No data available");
+          }
+        });
+      })
+      .catch((error) => {
+        console.error(error);
       });
-    });
   });
 }

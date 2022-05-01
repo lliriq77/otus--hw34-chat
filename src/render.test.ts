@@ -35,7 +35,6 @@ describe("render", () => {
 
     // clear chat
     buttons[0].dispatchEvent(new Event("click"));
-
     input.value = "first test msg";
     form.dispatchEvent(new Event("click"));
     await sleep(2000);
@@ -43,7 +42,7 @@ describe("render", () => {
     input.value = "second test msg";
     form.dispatchEvent(new Event("click"));
 
-    await sleep(2000);
+    await sleep(1000);
     const messages = document.querySelectorAll("p");
     expect(messages.length).toBe(2);
   });
