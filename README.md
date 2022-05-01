@@ -1,4 +1,4 @@
-# Разработать приложение "чат" на основе redux
+# Разработать приложение "чат" на основе Redux
 
 > ##### Домашнее задание курса **[JavaScript Developer. Basic](https://otus.ru/lessons/javascript-basic/?int_source=courses_catalog&int_term=programming)**
 >
