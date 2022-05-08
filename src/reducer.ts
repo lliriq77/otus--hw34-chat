@@ -12,7 +12,7 @@ export const appReducer: Reducer<iAppState, AnyAction> = function appReducer(
 ) {
   switch (action.type) {
     case "SEND_MESSAGE":
-      return { ...state, data: action.payload };
+      return { data: { ...state.data, ...action.payload } };
 
     case "CLEAR_HISTORY":
       return { data: action.payload };

@@ -1,13 +1,27 @@
-import { ref, set, child, get } from "firebase/database";
+import { ref, set, child, get, push, update } from "firebase/database";
 import { store } from "./store";
 import { database } from "./firebase";
-import { getVersion, setVersion } from "./version";
 import { render } from "./render";
 import { initialState } from "./state";
 
 export async function createMessanger(el: HTMLDivElement) {
-  let dbVersion = await getVersion();
   const state = store.getState();
+  const socket = new WebSocket("ws://lliriq77.github.io/otus--hw34-chat/:3030");
+
+  socket.onclose = () => {
+    console.log("socket closed");
+  };
+
+  socket.onopen = () => {
+    console.log("socket opened");
+  };
+
+  socket.onmessage = async (event) => {
+    store.dispatch({
+      type: "SEND_MESSAGE",
+      payload: JSON.parse(await event.data.text()),
+    });
+  };
 
   el.innerHTML = `
     <div class='header'>
@@ -20,6 +34,7 @@ export async function createMessanger(el: HTMLDivElement) {
 <button class='form__button gray' type ='submit'>→</button>
 </form>
 `;
+
   if (state.chatData.data) {
     render();
   }
@@ -28,65 +43,44 @@ export async function createMessanger(el: HTMLDivElement) {
   const clearButton = el.querySelector("button") as HTMLButtonElement;
   const db = ref(database);
 
-  setInterval(
-    () =>
-      get(child(db, `chat/data`))
-        .then((snapsht) => {
-          if (snapsht.exists() && snapsht.val().version !== dbVersion) {
-            setVersion(snapsht.val().version);
-            dbVersion = snapsht.val().version;
-
-            store.dispatch({
-              type: "SEND_MESSAGE",
-              payload: snapsht.val(),
-            });
-          } else {
-            console.log("No data available");
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        }),
-    2000
-  );
+  get(child(db, `chat/data`))
+    .then((snapsht) => {
+      if (snapsht.exists()) {
+        store.dispatch({
+          type: "SEND_MESSAGE",
+          payload: snapsht.val(),
+        });
+      } else {
+        console.log("No data available");
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 
   form.addEventListener("click", () => {
     if (input.value) {
-      const dbRef = ref(database);
-      get(child(dbRef, `chat/data`))
-        .then((snapshot) => {
-          const id = Date.now();
+      const id = Date.now();
+      const postData = {
+        body: input.value,
+        id,
+      };
 
-          if (snapshot.exists()) {
-            set(ref(database, "chat/data"), {
-              ...snapshot.val(),
-              history: snapshot.val().history.concat([
-                {
-                  msg: input.value,
-                  id,
-                },
-              ]),
-              version: id,
-            }).then(() => {
-              get(child(dbRef, `chat/data`)).then((snapsht) => {
-                if (snapsht.exists()) {
-                  store.dispatch({
-                    type: "SEND_MESSAGE",
-                    payload: snapsht.val(),
-                  });
-                  input.value = "";
-                } else {
-                  console.log("No data available");
-                }
-              });
-            });
-          } else {
-            console.log("No data available");
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      const newPostKey = push(child(ref(database), "chat/data")).key as string;
+
+      const updates: {
+        [x: string]: {
+          body: string;
+          id: number;
+        };
+      } = {};
+
+      updates[`chat/data/${newPostKey}`] = postData;
+      input.value = "";
+
+      socket.send(JSON.stringify({ [newPostKey]: postData }));
+
+      update(ref(database), updates);
     }
   });
 
@@ -94,13 +88,9 @@ export async function createMessanger(el: HTMLDivElement) {
     const dbRef = ref(database);
 
     set(ref(database, "chat/data"), { ...initialState.data })
-      .then(async () => {
+      .then(() => {
         get(child(dbRef, `chat/data`)).then(async (snapsht) => {
           if (snapsht.exists()) {
-            setVersion(snapsht.val().version);
-
-            dbVersion = await getVersion();
-
             store.dispatch({
               type: "CLEAR_HISTORY",
               payload: snapsht.val(),

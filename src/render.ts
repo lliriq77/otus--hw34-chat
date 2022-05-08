@@ -7,41 +7,22 @@ export const render = function render() {
 
   div.innerHTML = "";
 
-  if (state.chatData.data.history.length > 1) {
-    state.chatData.data.history.splice(1).forEach((element) => {
-      const p = document.createElement("p");
+  Object.keys(state.chatData.data).forEach((key) => {
+    const p = document.createElement("p");
 
-      if (element.msg) {
-        const sentDate = new Date(element.id);
-        p.innerHTML = `
+    if (state.chatData.data[key] && key !== "10000000000") {
+      const sentDate = new Date(state.chatData.data[key].id);
+      p.innerHTML = `
                 <span>
-                ${element.msg}
+                ${state.chatData.data[key].body}
                 </span>
                 <span class='timer'>
                 ${sentDate.getHours()}:${sentDate.getMinutes()}
                 </span>
                 `;
-        div.append(p);
-      }
-    });
-  } else {
-    state.chatData.data.history.forEach((element) => {
-      const p = document.createElement("p");
-
-      if (element.msg) {
-        const sentDate = new Date(element.id);
-        p.innerHTML = `
-                <span>
-                ${element.msg}
-                </span>
-                <span class='timer'>
-                ${sentDate.getHours()}:${sentDate.getMinutes()}
-                </span>
-                `;
-        div.append(p);
-      }
-    });
-  }
+      div.append(p);
+    }
+  });
 
   div.scrollTop = 20000;
 };
