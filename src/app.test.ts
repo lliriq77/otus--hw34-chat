@@ -5,7 +5,7 @@ import { sleep } from "./sleep";
 
 describe("app", () => {
   document.body.append(document.createElement("div"));
-  const div = document.querySelector("div") as HTMLDivElement;
+  // const div = document.querySelector("div") as HTMLDivElement;
 
   beforeAll(() => {
     store.subscribe(render);
