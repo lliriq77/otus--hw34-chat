@@ -17,10 +17,6 @@ jobs:
         run: |
           npm run build
 
-      - name: WS Server
-        run: |
-          npm run ws
-
       - name: Deploy
         # https://github.com/marketplace/actions/deploy-to-github-pages
         uses: JamesIves/github-pages-deploy-action@4.1.5

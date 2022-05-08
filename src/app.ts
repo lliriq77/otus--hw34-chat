@@ -6,7 +6,7 @@ import { initialState } from "./state";
 
 export async function createMessanger(el: HTMLDivElement) {
   const state = store.getState();
-  const socket = new WebSocket("ws://lliriq77.github.io/otus--hw34-chat/:3030");
+  const socket = new WebSocket("ws://192.168.1.65:3030");
 
   socket.onclose = () => {
     console.log("socket closed");
